@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -9,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Loader2, ImagePlay } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [loading, setLoading] = useState(false)
@@ -38,8 +39,59 @@ export default function LoginPage() {
   }
 
   return (
+    <CardContent>
+      {(erro || erroParam === 'acesso_negado') && (
+        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {erroParam === 'acesso_negado' ? 'Acesso não autorizado.' : erro}
+        </div>
+      )}
+
+      <form onSubmit={handleLogin} className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-zinc-300 text-sm">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="seu@email.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-orange-500"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="senha" className="text-zinc-300 text-sm">Senha</Label>
+          <Input
+            id="senha"
+            type="password"
+            placeholder="••••••••"
+            value={senha}
+            onChange={e => setSenha(e.target.value)}
+            required
+            className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-orange-500"
+          />
+        </div>
+
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+        >
+          {loading ? (
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Entrando...</>
+          ) : (
+            'Entrar'
+          )}
+        </Button>
+      </form>
+    </CardContent>
+  )
+}
+
+export default function LoginPage() {
+  return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      {/* Background sutil */}
       <div className="absolute inset-0 bg-gradient-to-br from-zinc-950 via-background to-zinc-900" />
 
       <Card className="relative w-full max-w-sm border-zinc-800 bg-zinc-900/80 backdrop-blur shadow-2xl">
@@ -53,55 +105,15 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
-          {(erro || erroParam === 'acesso_negado') && (
-            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-              {erroParam === 'acesso_negado'
-                ? 'Acesso não autorizado.'
-                : erro}
+        <Suspense fallback={
+          <CardContent>
+            <div className="h-32 flex items-center justify-center">
+              <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
             </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-zinc-300 text-sm">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-orange-500"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="senha" className="text-zinc-300 text-sm">Senha</Label>
-              <Input
-                id="senha"
-                type="password"
-                placeholder="••••••••"
-                value={senha}
-                onChange={e => setSenha(e.target.value)}
-                required
-                className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus-visible:ring-orange-500"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
-            >
-              {loading ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Entrando...</>
-              ) : (
-                'Entrar'
-              )}
-            </Button>
-          </form>
-        </CardContent>
+          </CardContent>
+        }>
+          <LoginForm />
+        </Suspense>
       </Card>
     </div>
   )
